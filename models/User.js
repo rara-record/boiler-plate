@@ -83,8 +83,8 @@ userSchema.methods.generateToken = function(cb) {
 
    user.token = token;
    user.save((err, user) => {
-      if(err) return cb(err);
-      cb(null, user) // 성공시 에러 null, user 정보 전달
+      if(err) return cb(err)
+      cb(null, user); // 성공시 에러 null, user 정보 전달
    })
 }
 
@@ -97,13 +97,12 @@ userSchema.statics.findByToken = function(token, cb) {
 
       // 유저 아이디와 토큰을 이용해서 유저를 찾는다
       user.findOne({ "_id" : decode, "token" : token}, function(err, user) {
-
-         // 클라이언트에서 가져온 token과 DB에 보관된 토큰이 일치하는지 확인한다.
          if(err) return cb(err);
          cb(null, user)       
       })
    }) 
 }
+
 
 const User = mongoose.model('User', userSchema)
 module.exports = { User }

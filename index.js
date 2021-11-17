@@ -35,7 +35,7 @@ app.post('/api/users/register', (req, res) => {
         success: true
     })
   })
-})
+});
 
 // 로그인
 app.post('/api/users/login', (req, res) => {
@@ -70,24 +70,32 @@ app.post('/api/users/login', (req, res) => {
 
 // 인증 기능
 app.get('/api/users/auth', auth, (req, res) => {
-
   // 미들웨어 통과 후 실행될 코드
   // 미들웨어를 통화했다 => Authentication가 Ture다.
 
   // 클라이언트에 응답, 어떤 정보를?
-  req.status(200).json({ 
-
-    // 유저정보를 응답
+  res.status(200).json({ 
     _id: req.user._id,
-    isAdmin: req.user.role === 0 ? false : true, // role != 0 관리자
+    isAdmin: req.user.role === 0 ? false : true,
     isAuth: true,
     email: req.user.email,
     name: req.user.name,
     lastname: req.user.lastname,
     role: req.user.role,
-    image: req.user.image
+    image: req.user.image,
   })
-})
+});
+
+// 로그아웃 : 로그아웃 하려는 유저를 데이터 베이서에서 찾아서 업데이트
+app.get('/api/users/logout', auth, (req, res) => {
+  // user._id : 미들웨어 auth user 를 찾음 , 그 유저의 토큰을 지워준다.
+  User.findOneAndUpdate({ _id: req.user._id }, { token: "" }, (err, decode) => {  
+      if (err) return res.json({ success: false, err });
+      return res.status(200).send({
+          success: true
+      });
+  });
+});
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
