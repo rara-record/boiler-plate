@@ -1,10 +1,9 @@
 import React from 'react'
 
-export default function LoginPage() {
+export default function LandingPage() {
     return (
         <div>
-            LoginPage
+            LandingPage
         </div>
     )
 }
-
