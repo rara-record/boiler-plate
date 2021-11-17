@@ -66,7 +66,7 @@ userSchema.methods.comparePassword = function(plainPassword, cb) {
       if (err) return cb(err);
       cb(null, isMatch);
       
-      });
+   });
 }
 
 // jsonToken 생성 메소드
@@ -74,7 +74,7 @@ userSchema.methods.generateToken = function(cb) {
 
    let user = this;
 
-   // jwt.sign(유저아이디, '작명')
+   // jwt.sign(유저아이디, '작명') 
    let token = jwt.sign(user._id.toHexString(), 'secretToken'); // user._id : database / _id
 
    // user._id + 'secretToken' = token
@@ -86,6 +86,23 @@ userSchema.methods.generateToken = function(cb) {
       if(err) return cb(err);
       cb(null, user) // 성공시 에러 null, user 정보 전달
    })
+}
+
+// 토큰 복호화 메소드 생성
+userSchema.statics.findByToken = function(token, cb) {
+   let user = this;
+
+   // verify: 토큰을 decode(복호화) 함수
+   jwt.verify(token, 'secretToken', function(err, decode) { // 토큰 검증
+
+      // 유저 아이디와 토큰을 이용해서 유저를 찾는다
+      user.findOne({ "_id" : decode, "token" : token}, function(err, user) {
+
+         // 클라이언트에서 가져온 token과 DB에 보관된 토큰이 일치하는지 확인한다.
+         if(err) return cb(err);
+         cb(null, user)       
+      })
+   }) 
 }
 
 const User = mongoose.model('User', userSchema)

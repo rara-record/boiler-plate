@@ -3,6 +3,7 @@ const app = express()
 const port = 5000
 const bodyParser = require('body-parser');
 const cookieParser = require("cookie-parser");
+const { auth } = require("./middleware/auth");
 const { User } = require("./models/User");
 
 const config = require('./config/key');
@@ -22,7 +23,7 @@ mongoose.connect(config.mongoURI, {
 app.get('/', (req, res) => res.send('Hello World! 코코 바보'))
 
 // 유저 정보 저장
-app.post('/register', (req, res) => {
+app.post('/api/users/register', (req, res) => {
     
   // 회원 가입 할떄 필요한 정보들을 client에서 가져오면
   // 그것들을 데이터 베이스에 넣어준다.
@@ -37,8 +38,7 @@ app.post('/register', (req, res) => {
 })
 
 // 로그인
-app.post("/login", (req, res) => {
-
+app.post('/api/users/login', (req, res) => {
   // 요청된 이메일을 데이터 베이스에서 찾는다
   User.findOne({ email: req.body.email }, (err, user) => {
     if (!user) 
@@ -58,7 +58,7 @@ app.post("/login", (req, res) => {
 
         // 토큰을 저장한다. 어디에? cookie, localStorage, session 등.. 
         res
-            .cookie("w_auth", user.token)
+            .cookie("x_auth", user.token)
             .status(200)
             .json({
                 loginSuccess: true, userId: user._id
@@ -67,6 +67,27 @@ app.post("/login", (req, res) => {
     });
   });
 });
+
+// 인증 기능
+app.get('/api/users/auth', auth, (req, res) => {
+
+  // 미들웨어 통과 후 실행될 코드
+  // 미들웨어를 통화했다 => Authentication가 Ture다.
+
+  // 클라이언트에 응답, 어떤 정보를?
+  req.status(200).json({ 
+
+    // 유저정보를 응답
+    _id: req.user._id,
+    isAdmin: req.user.role === 0 ? false : true, // role != 0 관리자
+    isAuth: true,
+    email: req.user.email,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    role: req.user.role,
+    image: req.user.image
+  })
+})
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
